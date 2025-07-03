@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Upload, Check, X, Edit3, Download, FileText, Image, Video, File } from 'lucide-react';
+import { Upload, Check, X, Edit3, Download, FileText, Image, Video, File, BarChart3 } from 'lucide-react';
 
 // Tipos de status de validação
 const VALIDATION_STATUSES = {
@@ -9,12 +9,12 @@ const VALIDATION_STATUSES = {
   REJECTED: 'rejected'
 };
 
-// Cores para cada status
+// Cores para cada status com nova paleta
 const STATUS_COLORS = {
-  [VALIDATION_STATUSES.PENDING]: 'bg-gray-100 text-gray-700 border-gray-300',
-  [VALIDATION_STATUSES.APPROVED]: 'bg-green-100 text-green-700 border-green-300',
-  [VALIDATION_STATUSES.NEEDS_ADJUSTMENT]: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-  [VALIDATION_STATUSES.REJECTED]: 'bg-red-100 text-red-700 border-red-300'
+  [VALIDATION_STATUSES.PENDING]: 'bg-slate-100 text-slate-700 border-slate-300',
+  [VALIDATION_STATUSES.APPROVED]: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  [VALIDATION_STATUSES.NEEDS_ADJUSTMENT]: 'bg-amber-100 text-amber-700 border-amber-300',
+  [VALIDATION_STATUSES.REJECTED]: 'bg-rose-100 text-rose-700 border-rose-300'
 };
 
 // Labels para os status
@@ -55,21 +55,23 @@ const FileUpload = ({ onFilesAdded }) => {
   return (
     <div className="mb-8">
       <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+        className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
           isDragging 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-300 hover:border-gray-400'
+            ? 'border-[#ffc801] bg-[#ffc801]/5 scale-105' 
+            : 'border-slate-300 hover:border-[#ffc801]/60 hover:bg-slate-50'
         }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <p className="text-lg font-medium text-gray-700 mb-2">
+        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-[#ffc801] to-[#ffb700] rounded-full flex items-center justify-center mb-6 shadow-lg">
+          <Upload className="h-10 w-10 text-white" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-800 mb-2">
           Arraste e solte seus arquivos aqui
-        </p>
-        <p className="text-gray-500 mb-4">
-          ou clique para selecionar
+        </h3>
+        <p className="text-slate-600 mb-6 max-w-md mx-auto">
+          Suporte para imagens, vídeos e PDFs. Arraste múltiplos arquivos ou clique para selecionar.
         </p>
         <input
           type="file"
@@ -81,8 +83,9 @@ const FileUpload = ({ onFilesAdded }) => {
         />
         <label
           htmlFor="file-input"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#ffc801] to-[#ffb700] text-white font-semibold rounded-xl cursor-pointer hover:shadow-lg transform hover:scale-105 transition-all duration-200"
         >
+          <Upload className="w-5 h-5 mr-2" />
           Selecionar Arquivos
         </label>
       </div>
@@ -93,13 +96,13 @@ const FileUpload = ({ onFilesAdded }) => {
 // Componente para mostrar ícone do tipo de arquivo
 const FileTypeIcon = ({ fileType }) => {
   if (fileType.startsWith('image/')) {
-    return <Image className="w-4 h-4" />;
+    return <Image className="w-5 h-5 text-blue-500" />;
   } else if (fileType.startsWith('video/')) {
-    return <Video className="w-4 h-4" />;
+    return <Video className="w-5 h-5 text-purple-500" />;
   } else if (fileType === 'application/pdf') {
-    return <FileText className="w-4 h-4" />;
+    return <FileText className="w-5 h-5 text-red-500" />;
   }
-  return <File className="w-4 h-4" />;
+  return <File className="w-5 h-5 text-slate-500" />;
 };
 
 // Componente para visualizar um arquivo
@@ -125,93 +128,105 @@ const FileViewer = ({ file, validation, onValidationChange }) => {
   const renderPreview = () => {
     if (file.type.startsWith('image/')) {
       return (
-        <img
-          src={file.url}
-          alt={file.name}
-          className="w-full h-48 object-cover rounded-lg"
-        />
+        <div className="relative group">
+          <img
+            src={file.url}
+            alt={file.name}
+            className="w-full h-48 object-cover rounded-xl"
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 rounded-xl" />
+        </div>
       );
     } else if (file.type.startsWith('video/')) {
       return (
         <video
           src={file.url}
           controls
-          className="w-full h-48 object-cover rounded-lg"
+          className="w-full h-48 object-cover rounded-xl"
         />
       );
     } else if (file.type === 'application/pdf') {
       return (
-        <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-          <FileText className="w-16 h-16 text-gray-400" />
-          <span className="ml-2 text-gray-600">PDF</span>
+        <div className="w-full h-48 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center">
+          <div className="text-center">
+            <FileText className="w-16 h-16 text-red-400 mx-auto mb-2" />
+            <span className="text-red-600 font-medium">PDF</span>
+          </div>
         </div>
       );
     }
     return (
-      <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-        <File className="w-16 h-16 text-gray-400" />
+      <div className="w-full h-48 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center">
+        <div className="text-center">
+          <File className="w-16 h-16 text-slate-400 mx-auto mb-2" />
+          <span className="text-slate-600 font-medium">Arquivo</span>
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
       {/* Preview do arquivo */}
       {renderPreview()}
       
       {/* Nome do arquivo */}
-      <div className="mt-3 flex items-center">
+      <div className="mt-4 flex items-center">
         <FileTypeIcon fileType={file.type} />
-        <span className="ml-2 text-sm font-medium text-gray-700 truncate">
+        <span className="ml-3 text-sm font-semibold text-slate-700 truncate">
           {file.name}
         </span>
       </div>
 
       {/* Botões de status */}
-      <div className="mt-4 flex gap-2">
+      <div className="mt-6 grid grid-cols-3 gap-2">
         <button
           onClick={() => handleStatusChange(VALIDATION_STATUSES.APPROVED)}
-          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+          className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
             validation.status === VALIDATION_STATUSES.APPROVED
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-green-100'
+              ? 'bg-emerald-500 text-white shadow-lg scale-105'
+              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
           }`}
         >
-          <Check className="w-4 h-4 inline mr-1" />
-          Aprovar
+          <Check className="w-4 h-4" />
         </button>
         
         <button
           onClick={() => handleStatusChange(VALIDATION_STATUSES.NEEDS_ADJUSTMENT)}
-          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+          className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
             validation.status === VALIDATION_STATUSES.NEEDS_ADJUSTMENT
-              ? 'bg-yellow-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-yellow-100'
+              ? 'bg-[#ffc801] text-white shadow-lg scale-105'
+              : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
           }`}
         >
-          <Edit3 className="w-4 h-4 inline mr-1" />
-          Ajustes
+          <Edit3 className="w-4 h-4" />
         </button>
         
         <button
           onClick={() => handleStatusChange(VALIDATION_STATUSES.REJECTED)}
-          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+          className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
             validation.status === VALIDATION_STATUSES.REJECTED
-              ? 'bg-red-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-red-100'
+              ? 'bg-rose-500 text-white shadow-lg scale-105'
+              : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
           }`}
         >
-          <X className="w-4 h-4 inline mr-1" />
-          Reprovar
+          <X className="w-4 h-4" />
         </button>
       </div>
 
+      {/* Labels dos botões */}
+      <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+        <div className="text-center text-emerald-600 font-medium">Aprovar</div>
+        <div className="text-center text-amber-600 font-medium">Ajustes</div>
+        <div className="text-center text-rose-600 font-medium">Reprovar</div>
+      </div>
+
       {/* Comentários */}
-      <div className="mt-3">
+      <div className="mt-4">
         {!showCommentInput ? (
           <button
             onClick={() => setShowCommentInput(true)}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            className="text-sm text-[#ffc801] hover:text-[#ffb700] font-medium transition-colors"
           >
             {validation.comment ? 'Editar comentário' : 'Adicionar comentário'}
           </button>
@@ -221,28 +236,28 @@ const FileViewer = ({ file, validation, onValidationChange }) => {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Digite seu comentário..."
-              className="w-full p-2 border border-gray-300 rounded-lg text-sm resize-none"
-              rows="2"
+              className="w-full p-3 border border-slate-200 rounded-xl text-sm resize-none focus:border-[#ffc801] focus:ring-2 focus:ring-[#ffc801]/20 outline-none transition-all"
+              rows="3"
               autoFocus
             />
             <button
               onClick={() => setShowCommentInput(false)}
-              className="mt-1 text-xs text-gray-500 hover:text-gray-700"
+              className="mt-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
             >
               Fechar
             </button>
           </div>
         )}
         {validation.comment && !showCommentInput && (
-          <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+          <p className="mt-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
             {validation.comment}
           </p>
         )}
       </div>
 
       {/* Status atual */}
-      <div className="mt-3">
-        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full border ${STATUS_COLORS[validation.status]}`}>
+      <div className="mt-4">
+        <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full border ${STATUS_COLORS[validation.status]}`}>
           {STATUS_LABELS[validation.status]}
         </span>
       </div>
@@ -261,50 +276,117 @@ const ValidationSummary = ({ validations }) => {
 
   if (total === 0) return null;
 
+  const cards = [
+    {
+      title: 'Pendentes',
+      value: stats[VALIDATION_STATUSES.PENDING] || 0,
+      color: 'slate',
+      icon: '⏳'
+    },
+    {
+      title: 'Aprovados',
+      value: stats[VALIDATION_STATUSES.APPROVED] || 0,
+      color: 'emerald',
+      icon: '✅'
+    },
+    {
+      title: 'Precisam Ajustes',
+      value: stats[VALIDATION_STATUSES.NEEDS_ADJUSTMENT] || 0,
+      color: 'amber',
+      icon: '✏️'
+    },
+    {
+      title: 'Reprovados',
+      value: stats[VALIDATION_STATUSES.REJECTED] || 0,
+      color: 'rose',
+      icon: '❌'
+    }
+  ];
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Resumo das Validações
-      </h3>
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-600">
-            {stats[VALIDATION_STATUSES.PENDING] || 0}
+    <div className="mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {cards.map((card, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 hover:shadow-xl transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-2xl">{card.icon}</span>
+              <div className={`w-12 h-12 rounded-full bg-${card.color}-100 flex items-center justify-center`}>
+                <BarChart3 className={`w-6 h-6 text-${card.color}-600`} />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-slate-800 mb-1">
+              {card.value}
+            </div>
+            <div className="text-sm text-slate-600 font-medium">
+              {card.title}
+            </div>
           </div>
-          <div className="text-sm text-gray-500">Pendentes</div>
-        </div>
-        
-        <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {stats[VALIDATION_STATUSES.APPROVED] || 0}
-          </div>
-          <div className="text-sm text-gray-500">Aprovados</div>
-        </div>
-        
-        <div className="text-center">
-          <div className="text-2xl font-bold text-yellow-600">
-            {stats[VALIDATION_STATUSES.NEEDS_ADJUSTMENT] || 0}
-          </div>
-          <div className="text-sm text-gray-500">Precisam Ajustes</div>
-        </div>
-        
-        <div className="text-center">
-          <div className="text-2xl font-bold text-red-600">
-            {stats[VALIDATION_STATUSES.REJECTED] || 0}
-          </div>
-          <div className="text-sm text-gray-500">Reprovados</div>
-        </div>
+        ))}
       </div>
 
-      <div className="mt-4 pt-4 border-t">
-        <div className="text-center">
-          <span className="text-lg font-semibold text-gray-700">
-            Total: {total} peças
-          </span>
+      <div className="bg-gradient-to-r from-[#ffc801] to-[#ffb700] rounded-2xl p-6 text-center shadow-xl">
+        <div className="text-white">
+          <div className="text-3xl font-bold mb-2">{total}</div>
+          <div className="text-lg font-semibold opacity-90">Total de peças enviadas</div>
         </div>
       </div>
     </div>
+  );
+};
+
+// Componente da Logo Aprobi
+const AprobiLogo = ({ size = "large" }) => {
+  const dimensions = size === "large" ? { width: 140, height: 48 } : { width: 100, height: 34 };
+  
+  return (
+    <svg width={dimensions.width} height={dimensions.height} viewBox="0 0 140 48" className="flex-shrink-0">
+      {/* Letra A com gradiente */}
+      <defs>
+        <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ffc801" />
+          <stop offset="100%" stopColor="#ffb700" />
+        </linearGradient>
+      </defs>
+      
+      {/* Letra A estilizada */}
+      <path 
+        d="M8 38 L18 10 L28 38 M13 28 L23 28" 
+        stroke="url(#yellowGradient)" 
+        strokeWidth="5" 
+        fill="none" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      
+      {/* Triângulo superior do A preenchido */}
+      <path 
+        d="M15 10 L21 10 L24 18 L12 18 Z" 
+        fill="url(#yellowGradient)"
+      />
+      
+      {/* Linhas horizontais azuis */}
+      <line x1="32" y1="16" x2="44" y2="16" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="32" y1="21" x2="40" y2="21" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="32" y1="26" x2="46" y2="26" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+      
+      {/* Check mark verde/teal */}
+      <path 
+        d="M36 31 L40 35 L48 24" 
+        stroke="#10b981" 
+        strokeWidth="3.5" 
+        fill="none" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      
+      {/* Texto "probi" */}
+      <text x="56" y="33" fontFamily="Arial, sans-serif" fontSize="22" fontWeight="bold" fill="#1e3a8a">
+        probi
+      </text>
+    </svg>
   );
 };
 
@@ -337,17 +419,16 @@ const App = () => {
 
   const handleFilesAdded = useCallback((newFiles) => {
     const processedFiles = newFiles.map(file => ({
-      id: Date.now() + Math.random(), // ID único simples
+      id: Date.now() + Math.random(),
       name: file.name,
       type: file.type,
       size: file.size,
-      url: URL.createObjectURL(file), // Cria URL temporária para preview
-      file: file // Mantém referência ao arquivo original
+      url: URL.createObjectURL(file),
+      file: file
     }));
 
     setFiles(prev => [...prev, ...processedFiles]);
 
-    // Cria validações iniciais para os novos arquivos
     const newValidations = {};
     processedFiles.forEach(file => {
       newValidations[file.id] = {
@@ -398,32 +479,35 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className="bg-white shadow-xl border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Sunocreators Approval
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Validação rápida de peças criativas
-              </p>
+            <div className="flex items-center space-x-6">
+              <AprobiLogo size="large" />
+              <div className="border-l border-slate-300 pl-6">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                  Sistema de Aprovação
+                </h1>
+                <p className="text-lg text-slate-600 font-medium">
+                  Validação de Peças Criativas
+                </p>
+              </div>
             </div>
             
             {files.length > 0 && (
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <button
                   onClick={exportResults}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center font-semibold transform hover:scale-105"
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download className="w-5 h-5 mr-2" />
                   Exportar CSV
                 </button>
                 <button
                   onClick={clearAll}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                  className="bg-gradient-to-r from-rose-500 to-rose-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold transform hover:scale-105"
                 >
                   Limpar Tudo
                 </button>
@@ -434,14 +518,14 @@ const App = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-12">
         <FileUpload onFilesAdded={handleFilesAdded} />
         
         {files.length > 0 && (
           <>
             <ValidationSummary validations={validations} />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {files.map(file => (
                 <FileViewer
                   key={file.id}
@@ -455,13 +539,15 @@ const App = () => {
         )}
 
         {files.length === 0 && (
-          <div className="text-center py-12">
-            <Upload className="mx-auto h-24 w-24 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-700 mb-2">
-              Nenhum arquivo carregado
+          <div className="text-center py-20">
+            <div className="mx-auto w-48 h-32 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl border-4 border-[#ffc801]/20">
+              <AprobiLogo size="small" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-4">
+              Pronto para começar?
             </h3>
-            <p className="text-gray-500">
-              Faça upload de suas peças criativas para começar a validação
+            <p className="text-lg text-slate-600 max-w-md mx-auto">
+              Faça upload de suas peças criativas para iniciar o processo de validação profissional
             </p>
           </div>
         )}
