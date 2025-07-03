@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Upload, Check, X, Edit3, Download, FileText, Image, Video, File, BarChart3 } from 'lucide-react';
+import { Upload, Check, Edit3, Download, FileText, Image, Video, File, BarChart3 } from 'lucide-react';
 
 // Tipos de status de validação
 const VALIDATION_STATUSES = {
@@ -179,7 +179,7 @@ const FileViewer = ({ file, validation, onValidationChange }) => {
       </div>
 
       {/* Botões de status */}
-      <div className="mt-6 grid grid-cols-3 gap-2">
+      <div className="mt-6 grid grid-cols-2 gap-3">
         <button
           onClick={() => handleStatusChange(VALIDATION_STATUSES.APPROVED)}
           className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
@@ -201,24 +201,12 @@ const FileViewer = ({ file, validation, onValidationChange }) => {
         >
           <Edit3 className="w-4 h-4" />
         </button>
-        
-        <button
-          onClick={() => handleStatusChange(VALIDATION_STATUSES.REJECTED)}
-          className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
-            validation.status === VALIDATION_STATUSES.REJECTED
-              ? 'bg-rose-500 text-white shadow-lg scale-105'
-              : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-          }`}
-        >
-          <X className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Labels dos botões */}
-      <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+      <div className="mt-2 grid grid-cols-2 gap-3 text-xs">
         <div className="text-center text-emerald-600 font-medium">Aprovar</div>
         <div className="text-center text-amber-600 font-medium">Ajustes</div>
-        <div className="text-center text-rose-600 font-medium">Reprovar</div>
       </div>
 
       {/* Comentários */}
@@ -294,18 +282,12 @@ const ValidationSummary = ({ validations }) => {
       value: stats[VALIDATION_STATUSES.NEEDS_ADJUSTMENT] || 0,
       color: 'amber',
       icon: '✏️'
-    },
-    {
-      title: 'Reprovados',
-      value: stats[VALIDATION_STATUSES.REJECTED] || 0,
-      color: 'rose',
-      icon: '❌'
     }
   ];
 
   return (
     <div className="mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {cards.map((card, index) => (
           <div
             key={index}
@@ -536,20 +518,6 @@ const App = () => {
               ))}
             </div>
           </>
-        )}
-
-        {files.length === 0 && (
-          <div className="text-center py-20">
-            <div className="mx-auto w-48 h-32 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl border-4 border-[#ffc801]/20">
-              <AprobiLogo size="small" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-4">
-              Pronto para começar?
-            </h3>
-            <p className="text-lg text-slate-600 max-w-md mx-auto">
-              Faça upload de suas peças criativas para iniciar o processo de validação profissional
-            </p>
-          </div>
         )}
       </main>
     </div>
