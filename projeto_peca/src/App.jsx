@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Upload, Check, Edit3, Download, FileText, Image, Video, File, BarChart3 } from 'lucide-react';
+import { Upload, Check, Edit3, Download, FileText, Image, Video, File, BarChart3, X, Save, Eye, ChevronDown } from 'lucide-react';
 
 // Tipos de status de validação
 const VALIDATION_STATUSES = {
@@ -105,25 +105,175 @@ const FileTypeIcon = ({ fileType }) => {
   return <File className="w-5 h-5 text-slate-500" />;
 };
 
-// Componente para visualizar um arquivo
-const FileViewer = ({ file, validation, onValidationChange }) => {
-  const [comment, setComment] = useState(validation.comment || '');
-  const [showCommentInput, setShowCommentInput] = useState(false);
-
-  // Salva comentário quando o usuário para de digitar
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (comment !== validation.comment) {
-        onValidationChange(file.id, { comment });
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [comment, validation.comment, onValidationChange, file.id]);
+// Componente pop-up para validação
+const FilePopup = ({ file, validation, onValidationChange, onClose, onSave }) => {
+  const [localValidation, setLocalValidation] = useState({
+    status: validation?.status || VALIDATION_STATUSES.PENDING,
+    comment: validation?.comment || ''
+  });
 
   const handleStatusChange = (status) => {
-    onValidationChange(file.id, { status });
+    setLocalValidation(prev => ({ ...prev, status }));
   };
+
+  const handleCommentChange = (comment) => {
+    setLocalValidation(prev => ({ ...prev, comment }));
+  };
+
+  const handleSave = () => {
+    onSave(file.id, localValidation);
+    onClose();
+  };
+
+  const renderContent = () => {
+    if (file.type.startsWith('image/')) {
+      return (
+        <img
+          src={file.url}
+          alt={file.name}
+          className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-lg"
+        />
+      );
+    } else if (file.type.startsWith('video/')) {
+      return (
+        <video
+          src={file.url}
+          controls
+          className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-lg"
+        />
+      );
+    } else if (file.type === 'application/pdf') {
+      return (
+        <div className="w-96 h-96 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="text-center">
+            <FileText className="w-24 h-24 text-red-400 mx-auto mb-4" />
+            <span className="text-red-600 font-medium text-lg">Arquivo PDF</span>
+            <p className="text-red-500 text-sm mt-2">Clique para baixar e visualizar</p>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="w-96 h-96 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center shadow-lg">
+        <div className="text-center">
+          <File className="w-24 h-24 text-slate-400 mx-auto mb-4" />
+          <span className="text-slate-600 font-medium text-lg">Arquivo</span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <div className="flex items-center space-x-3">
+            <FileTypeIcon fileType={file.type} />
+            <div>
+              <h3 className="text-xl font-bold text-slate-800">{file.name}</h3>
+              <p className="text-sm text-slate-600">Validação de peça criativa</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+          >
+            <X className="w-6 h-6 text-slate-600" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {/* File Preview */}
+          <div className="flex justify-center mb-8">
+            {renderContent()}
+          </div>
+
+          {/* Validation Controls */}
+          <div className="space-y-6">
+            {/* Status Buttons */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3">
+                Status da Validação
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => handleStatusChange(VALIDATION_STATUSES.APPROVED)}
+                  className={`p-4 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
+                    localValidation.status === VALIDATION_STATUSES.APPROVED
+                      ? 'bg-emerald-500 text-white shadow-lg scale-105'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                  }`}
+                >
+                  <Check className="w-5 h-5" />
+                  <span>Aprovar</span>
+                </button>
+                
+                <button
+                  onClick={() => handleStatusChange(VALIDATION_STATUSES.NEEDS_ADJUSTMENT)}
+                  className={`p-4 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
+                    localValidation.status === VALIDATION_STATUSES.NEEDS_ADJUSTMENT
+                      ? 'bg-[#ffc801] text-white shadow-lg scale-105'
+                      : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
+                  }`}
+                >
+                  <Edit3 className="w-5 h-5" />
+                  <span>Precisa Ajustes</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3">
+                Comentário (opcional)
+              </label>
+              <textarea
+                value={localValidation.comment}
+                onChange={(e) => handleCommentChange(e.target.value)}
+                placeholder="Digite suas observações sobre a peça..."
+                className="w-full p-4 border border-slate-200 rounded-xl text-sm resize-none focus:border-[#ffc801] focus:ring-2 focus:ring-[#ffc801]/20 outline-none transition-all"
+                rows="4"
+              />
+            </div>
+
+            {/* Current Status */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3">
+                Status Atual
+              </label>
+              <span className={`inline-block px-4 py-2 text-sm font-semibold rounded-full border ${STATUS_COLORS[localValidation.status]}`}>
+                {STATUS_LABELS[localValidation.status]}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end space-x-4 p-6 border-t border-slate-200 bg-slate-50 rounded-b-3xl">
+          <button
+            onClick={onClose}
+            className="px-6 py-3 text-slate-600 font-semibold hover:text-slate-800 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-8 py-3 bg-gradient-to-r from-[#ffc801] to-[#ffb700] text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center space-x-2"
+          >
+            <Save className="w-5 h-5" />
+            <span>Salvar Validação</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente para visualizar um arquivo (apenas preview)
+const FileViewer = ({ file, validation, onOpenPopup }) => {
+  const [isHovered, setIsHovered] = useState(false);
 
   const renderPreview = () => {
     if (file.type.startsWith('image/')) {
@@ -134,39 +284,80 @@ const FileViewer = ({ file, validation, onValidationChange }) => {
             alt={file.name}
             className="w-full h-48 object-cover rounded-xl"
           />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 rounded-xl" />
+          {isHovered && (
+            <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center transition-all duration-200">
+              <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
+                <Eye className="w-4 h-4 text-slate-700" />
+                <span className="text-sm font-semibold text-slate-700">Visualizar</span>
+              </div>
+            </div>
+          )}
         </div>
       );
     } else if (file.type.startsWith('video/')) {
       return (
-        <video
-          src={file.url}
-          controls
-          className="w-full h-48 object-cover rounded-xl"
-        />
+        <div className="relative group">
+          <video
+            src={file.url}
+            className="w-full h-48 object-cover rounded-xl"
+          />
+          {isHovered && (
+            <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center transition-all duration-200">
+              <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
+                <Eye className="w-4 h-4 text-slate-700" />
+                <span className="text-sm font-semibold text-slate-700">Visualizar</span>
+              </div>
+            </div>
+          )}
+        </div>
       );
     } else if (file.type === 'application/pdf') {
       return (
-        <div className="w-full h-48 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center">
-          <div className="text-center">
-            <FileText className="w-16 h-16 text-red-400 mx-auto mb-2" />
-            <span className="text-red-600 font-medium">PDF</span>
+        <div className="relative group">
+          <div className="w-full h-48 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center">
+            <div className="text-center">
+              <FileText className="w-16 h-16 text-red-400 mx-auto mb-2" />
+              <span className="text-red-600 font-medium">PDF</span>
+            </div>
           </div>
+          {isHovered && (
+            <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center transition-all duration-200">
+              <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
+                <Eye className="w-4 h-4 text-slate-700" />
+                <span className="text-sm font-semibold text-slate-700">Visualizar</span>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
     return (
-      <div className="w-full h-48 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center">
-        <div className="text-center">
-          <File className="w-16 h-16 text-slate-400 mx-auto mb-2" />
-          <span className="text-slate-600 font-medium">Arquivo</span>
+      <div className="relative group">
+        <div className="w-full h-48 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex items-center justify-center">
+          <div className="text-center">
+            <File className="w-16 h-16 text-slate-400 mx-auto mb-2" />
+            <span className="text-slate-600 font-medium">Arquivo</span>
+          </div>
         </div>
+        {isHovered && (
+          <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center transition-all duration-200">
+            <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
+              <Eye className="w-4 h-4 text-slate-700" />
+              <span className="text-sm font-semibold text-slate-700">Visualizar</span>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+    <div 
+      className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+      onClick={() => onOpenPopup(file)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Preview do arquivo */}
       {renderPreview()}
       
@@ -178,77 +369,21 @@ const FileViewer = ({ file, validation, onValidationChange }) => {
         </span>
       </div>
 
-      {/* Botões de status */}
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <button
-          onClick={() => handleStatusChange(VALIDATION_STATUSES.APPROVED)}
-          className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
-            validation.status === VALIDATION_STATUSES.APPROVED
-              ? 'bg-emerald-500 text-white shadow-lg scale-105'
-              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-          }`}
-        >
-          <Check className="w-4 h-4" />
-        </button>
-        
-        <button
-          onClick={() => handleStatusChange(VALIDATION_STATUSES.NEEDS_ADJUSTMENT)}
-          className={`py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center ${
-            validation.status === VALIDATION_STATUSES.NEEDS_ADJUSTMENT
-              ? 'bg-[#ffc801] text-white shadow-lg scale-105'
-              : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
-          }`}
-        >
-          <Edit3 className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Labels dos botões */}
-      <div className="mt-2 grid grid-cols-2 gap-3 text-xs">
-        <div className="text-center text-emerald-600 font-medium">Aprovar</div>
-        <div className="text-center text-amber-600 font-medium">Ajustes</div>
-      </div>
-
-      {/* Comentários */}
-      <div className="mt-4">
-        {!showCommentInput ? (
-          <button
-            onClick={() => setShowCommentInput(true)}
-            className="text-sm text-[#ffc801] hover:text-[#ffb700] font-medium transition-colors"
-          >
-            {validation.comment ? 'Editar comentário' : 'Adicionar comentário'}
-          </button>
-        ) : (
-          <div>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Digite seu comentário..."
-              className="w-full p-3 border border-slate-200 rounded-xl text-sm resize-none focus:border-[#ffc801] focus:ring-2 focus:ring-[#ffc801]/20 outline-none transition-all"
-              rows="3"
-              autoFocus
-            />
-            <button
-              onClick={() => setShowCommentInput(false)}
-              className="mt-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Fechar
-            </button>
-          </div>
-        )}
-        {validation.comment && !showCommentInput && (
-          <p className="mt-2 text-sm text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
-            {validation.comment}
-          </p>
-        )}
-      </div>
-
       {/* Status atual */}
       <div className="mt-4">
         <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full border ${STATUS_COLORS[validation.status]}`}>
           {STATUS_LABELS[validation.status]}
         </span>
       </div>
+
+      {/* Comentário se existir */}
+      {validation.comment && (
+        <div className="mt-3">
+          <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-200 line-clamp-2">
+            {validation.comment}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
@@ -376,6 +511,9 @@ const AprobiLogo = ({ size = "large" }) => {
 const App = () => {
   const [files, setFiles] = useState([]);
   const [validations, setValidations] = useState({});
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Carrega dados salvos do localStorage ao iniciar
   useEffect(() => {
@@ -389,6 +527,29 @@ const App = () => {
       setValidations(JSON.parse(savedValidations));
     }
   }, []);
+
+  // Fecha o menu de exportação quando clica fora ou pressiona Escape
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showExportMenu && !event.target.closest('.export-menu-container')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && showExportMenu) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showExportMenu]);
 
   // Salva no localStorage sempre que files ou validations mudarem
   useEffect(() => {
@@ -422,17 +583,24 @@ const App = () => {
     setValidations(prev => ({ ...prev, ...newValidations }));
   }, []);
 
-  const handleValidationChange = useCallback((fileId, updates) => {
+  const handleOpenPopup = useCallback((file) => {
+    setSelectedFile(file);
+  }, []);
+
+  const handleClosePopup = useCallback(() => {
+    setSelectedFile(null);
+  }, []);
+
+  const handleSaveValidation = useCallback((fileId, validation) => {
     setValidations(prev => ({
       ...prev,
-      [fileId]: {
-        ...prev[fileId],
-        ...updates
-      }
+      [fileId]: validation
     }));
   }, []);
 
-  const exportResults = () => {
+  const exportCSV = () => {
+    setIsExporting(true);
+    
     const results = files.map(file => ({
       arquivo: file.name,
       status: STATUS_LABELS[validations[file.id]?.status] || 'Pendente',
@@ -449,12 +617,197 @@ const App = () => {
     link.href = URL.createObjectURL(blob);
     link.download = `validacao_sunocreators_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
+    
+    setTimeout(() => setIsExporting(false), 1000);
+  };
+
+  const exportPDF = async () => {
+    setIsExporting(true);
+    // Criar um elemento temporário para o PDF
+    const element = document.createElement('div');
+    element.style.width = '210mm';
+    element.style.minHeight = '297mm';
+    element.style.padding = '20mm';
+    element.style.backgroundColor = 'white';
+    element.style.fontFamily = 'Arial, sans-serif';
+    element.style.color = '#1e293b';
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    
+    const today = new Date().toLocaleDateString('pt-BR');
+    const stats = Object.values(validations).reduce((acc, validation) => {
+      acc[validation.status] = (acc[validation.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    element.innerHTML = `
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #ffc801; padding-bottom: 20px;">
+        <h1 style="color: #1e3a8a; margin: 0; font-size: 28px; font-weight: bold;">Sistema Aprobi</h1>
+        <h2 style="color: #64748b; margin: 10px 0 0 0; font-size: 18px;">Relatório de Validação de Peças Criativas</h2>
+        <p style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Data: ${today}</p>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="color: #1e293b; margin-bottom: 15px; font-size: 18px;">Resumo Geral</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+          <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #1e293b;">${files.length}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Total de Peças</div>
+          </div>
+          <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #059669;">${stats[VALIDATION_STATUSES.APPROVED] || 0}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Aprovadas</div>
+          </div>
+          <div style="background: #fffbeb; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #d97706;">${stats[VALIDATION_STATUSES.NEEDS_ADJUSTMENT] || 0}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Precisam Ajustes</div>
+          </div>
+          <div style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; color: #64748b;">${stats[VALIDATION_STATUSES.PENDING] || 0}</div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Pendentes</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="color: #1e293b; margin-bottom: 20px; font-size: 18px;">Detalhamento das Peças</h3>
+        ${files.map((file, index) => {
+          const validation = validations[file.id] || { status: VALIDATION_STATUSES.PENDING, comment: '' };
+          const statusColor = validation.status === VALIDATION_STATUSES.APPROVED ? '#059669' :
+                             validation.status === VALIDATION_STATUSES.NEEDS_ADJUSTMENT ? '#d97706' : '#64748b';
+          const statusBg = validation.status === VALIDATION_STATUSES.APPROVED ? '#ecfdf5' :
+                          validation.status === VALIDATION_STATUSES.NEEDS_ADJUSTMENT ? '#fffbeb' : '#f8fafc';
+          
+          return `
+            <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; background: #fafafa;">
+              <div style="display: flex; align-items: start; gap: 20px;">
+                <div style="flex-shrink: 0;">
+                  <div style="width: 100px; height: 80px; background: ${statusBg}; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid ${statusColor}20;">
+                    <div style="text-align: center; color: ${statusColor};">
+                      <div style="font-size: 24px; margin-bottom: 5px;">
+                        ${file.type.startsWith('image/') ? '🖼️' : 
+                          file.type.startsWith('video/') ? '🎥' : 
+                          file.type === 'application/pdf' ? '📄' : '📁'}
+                      </div>
+                      <div style="font-size: 10px; font-weight: bold;">${file.type.startsWith('image/') ? 'IMG' : 
+                        file.type.startsWith('video/') ? 'VIDEO' : 
+                        file.type === 'application/pdf' ? 'PDF' : 'ARQUIVO'}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <h4 style="margin: 0; font-size: 16px; color: #1e293b; font-weight: bold; max-width: 300px; word-break: break-word;">${file.name}</h4>
+                    <span style="background: ${statusBg}; color: ${statusColor}; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid ${statusColor};">
+                      ${STATUS_LABELS[validation.status]}
+                    </span>
+                  </div>
+                  
+                  <div style="color: #64748b; font-size: 12px; margin-bottom: 8px;">
+                    <strong>Tipo:</strong> ${file.type} | <strong>Tamanho:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB
+                  </div>
+                  
+                  ${validation.comment ? `
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 10px;">
+                      <div style="font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: bold;">COMENTÁRIO:</div>
+                      <div style="font-size: 13px; color: #374151; line-height: 1.4;">${validation.comment}</div>
+                    </div>
+                  ` : `
+                    <div style="font-size: 12px; color: #9ca3af; font-style: italic; margin-top: 10px;">Nenhum comentário</div>
+                  `}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
+          Relatório gerado automaticamente pelo Sistema Aprobi em ${new Date().toLocaleString('pt-BR')}
+        </p>
+      </div>
+    `;
+
+    document.body.appendChild(element);
+
+    try {
+      // Usar a API de impressão do navegador para gerar PDF
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Relatório de Validação - Aprobi</title>
+          <style>
+            @page {
+              size: A4;
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              font-family: Arial, sans-serif;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            @media print {
+              .page-break {
+                page-break-before: always;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${element.innerHTML}
+        </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      printWindow.focus();
+      
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+      
+    } catch (error) {
+      // Fallback: download como HTML
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Relatório de Validação - Aprobi</title>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; background: white; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          ${element.innerHTML}
+        </body>
+        </html>
+      `;
+      
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `relatorio_validacao_aprobi_${new Date().toISOString().split('T')[0]}.html`;
+      link.click();
+    }
+
+    document.body.removeChild(element);
+    setTimeout(() => setIsExporting(false), 1000);
   };
 
   const clearAll = () => {
     if (window.confirm('Tem certeza que deseja limpar todos os arquivos e validações?')) {
       setFiles([]);
       setValidations({});
+      setSelectedFile(null);
+      setShowExportMenu(false);
       localStorage.removeItem('sunoCreatorsFiles');
       localStorage.removeItem('sunoCreatorsValidations');
     }
@@ -480,13 +833,62 @@ const App = () => {
             
             {files.length > 0 && (
               <div className="flex gap-4">
-                <button
-                  onClick={exportResults}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center font-semibold transform hover:scale-105"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Exportar CSV
-                </button>
+                <div className="relative export-menu-container">
+                  <button
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                    disabled={isExporting}
+                    className={`bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center font-semibold transform hover:scale-105 ${isExporting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                  >
+                    {isExporting ? (
+                      <>
+                        <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Exportando...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5 mr-2" />
+                        Exportar
+                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                  
+                  {showExportMenu && !isExporting && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-50">
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            exportCSV();
+                            setShowExportMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-50 flex items-center transition-colors"
+                        >
+                          <FileText className="w-4 h-4 mr-3 text-emerald-600" />
+                          <div>
+                            <div className="font-semibold">Exportar CSV</div>
+                            <div className="text-xs text-slate-500">Planilha para análise</div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => {
+                            exportPDF();
+                            setShowExportMenu(false);
+                          }}
+                          className="w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-50 flex items-center transition-colors"
+                        >
+                          <File className="w-4 h-4 mr-3 text-red-600" />
+                          <div>
+                            <div className="font-semibold">Exportar PDF</div>
+                            <div className="text-xs text-slate-500">Relatório visual completo</div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
                 <button
                   onClick={clearAll}
                   className="bg-gradient-to-r from-rose-500 to-rose-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold transform hover:scale-105"
@@ -507,19 +909,39 @@ const App = () => {
           <>
             <ValidationSummary validations={validations} />
             
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-slate-800 mb-4">
+                Peças para Validação
+              </h2>
+              <p className="text-slate-600 mb-6">
+                Clique em qualquer peça para abrir a visualização completa e realizar a validação.
+              </p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {files.map(file => (
                 <FileViewer
                   key={file.id}
                   file={file}
                   validation={validations[file.id] || { status: VALIDATION_STATUSES.PENDING, comment: '' }}
-                  onValidationChange={handleValidationChange}
+                  onOpenPopup={handleOpenPopup}
                 />
               ))}
             </div>
           </>
         )}
       </main>
+
+      {/* Pop-up Modal */}
+      {selectedFile && (
+        <FilePopup
+          file={selectedFile}
+          validation={validations[selectedFile.id] || { status: VALIDATION_STATUSES.PENDING, comment: '' }}
+          onValidationChange={handleSaveValidation}
+          onClose={handleClosePopup}
+          onSave={handleSaveValidation}
+        />
+      )}
     </div>
   );
 };
