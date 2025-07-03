@@ -19,8 +19,8 @@ const STATUS_COLORS = {
 
 // Labels para os status
 const STATUS_LABELS = {
-  [VALIDATION_STATUSES.PENDING]: 'Pendente',
-  [VALIDATION_STATUSES.APPROVED]: 'Aprovado',
+  [VALIDATION_STATUSES.PENDING]: 'Pendentes',
+  [VALIDATION_STATUSES.APPROVED]: 'Aprovados',
   [VALIDATION_STATUSES.NEEDS_ADJUSTMENT]: 'Precisa Ajustes',
   [VALIDATION_STATUSES.REJECTED]: 'Reprovado'
 };
@@ -388,8 +388,8 @@ const FileViewer = ({ file, validation, onOpenPopup }) => {
   );
 };
 
-// Componente de resumo das validações
-const ValidationSummary = ({ validations }) => {
+// Componente de filtros de validação
+const ValidationFilters = ({ validations, activeFilter, onFilterChange }) => {
   const stats = Object.values(validations).reduce((acc, validation) => {
     acc[validation.status] = (acc[validation.status] || 0) + 1;
     return acc;
@@ -399,20 +399,30 @@ const ValidationSummary = ({ validations }) => {
 
   if (total === 0) return null;
 
-  const cards = [
+  const filters = [
     {
+      id: 'all',
+      title: 'Todas',
+      value: total,
+      color: 'slate',
+      icon: '📋'
+    },
+    {
+      id: VALIDATION_STATUSES.PENDING,
       title: 'Pendentes',
       value: stats[VALIDATION_STATUSES.PENDING] || 0,
       color: 'slate',
       icon: '⏳'
     },
     {
+      id: VALIDATION_STATUSES.APPROVED,
       title: 'Aprovados',
       value: stats[VALIDATION_STATUSES.APPROVED] || 0,
       color: 'emerald',
       icon: '✅'
     },
     {
+      id: VALIDATION_STATUSES.NEEDS_ADJUSTMENT,
       title: 'Precisam Ajustes',
       value: stats[VALIDATION_STATUSES.NEEDS_ADJUSTMENT] || 0,
       color: 'amber',
@@ -422,34 +432,62 @@ const ValidationSummary = ({ validations }) => {
 
   return (
     <div className="mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {cards.map((card, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 hover:shadow-xl transition-all duration-300"
+      <div className="flex flex-wrap gap-3 mb-6">
+        {filters.map((filter) => (
+          <button
+            key={filter.id}
+            onClick={() => onFilterChange(filter.id === 'all' ? null : filter.id)}
+            className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border ${
+              activeFilter === (filter.id === 'all' ? null : filter.id)
+                ? filter.color === 'slate' 
+                  ? 'bg-slate-600 text-white border-slate-600 shadow-md'
+                  : filter.color === 'emerald'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-md'
+                  : 'bg-amber-600 text-white border-amber-600 shadow-md'
+                : filter.color === 'slate'
+                ? 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                : filter.color === 'emerald'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+            }`}
           >
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-2xl">{card.icon}</span>
-              <div className={`w-12 h-12 rounded-full bg-${card.color}-100 flex items-center justify-center`}>
-                <BarChart3 className={`w-6 h-6 text-${card.color}-600`} />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-slate-800 mb-1">
-              {card.value}
-            </div>
-            <div className="text-sm text-slate-600 font-medium">
-              {card.title}
-            </div>
-          </div>
+            <span className="mr-2 text-base">{filter.icon}</span>
+            <span>{filter.title}</span>
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+              activeFilter === (filter.id === 'all' ? null : filter.id)
+                ? 'bg-white/20 text-white'
+                : filter.color === 'slate'
+                ? 'bg-slate-200 text-slate-700'
+                : filter.color === 'emerald'
+                ? 'bg-emerald-200 text-emerald-700'
+                : 'bg-amber-200 text-amber-700'
+            }`}>
+              {filter.value}
+            </span>
+          </button>
         ))}
       </div>
 
-      <div className="bg-gradient-to-r from-[#ffc801] to-[#ffb700] rounded-2xl p-6 text-center shadow-xl">
-        <div className="text-white">
-          <div className="text-3xl font-bold mb-2">{total}</div>
-          <div className="text-lg font-semibold opacity-90">Total de peças enviadas</div>
+      {/* Indicador do filtro ativo */}
+      {activeFilter && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-blue-700">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+              <span className="text-sm font-medium">
+                Mostrando apenas peças: {STATUS_LABELS[activeFilter]}
+              </span>
+            </div>
+            <button
+              onClick={() => onFilterChange(null)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+            >
+              <X className="w-4 h-4 mr-1" />
+              Limpar filtro
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -514,6 +552,7 @@ const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
 
   // Carrega dados salvos do localStorage ao iniciar
   useEffect(() => {
@@ -597,6 +636,17 @@ const App = () => {
       [fileId]: validation
     }));
   }, []);
+
+  const handleFilterChange = useCallback((filter) => {
+    setActiveFilter(filter);
+  }, []);
+
+  // Filtrar arquivos baseado no filtro ativo
+  const filteredFiles = files.filter(file => {
+    if (!activeFilter) return true;
+    const validation = validations[file.id];
+    return validation && validation.status === activeFilter;
+  });
 
   const exportCSV = () => {
     setIsExporting(true);
@@ -808,6 +858,7 @@ const App = () => {
       setValidations({});
       setSelectedFile(null);
       setShowExportMenu(false);
+      setActiveFilter(null);
       localStorage.removeItem('sunoCreatorsFiles');
       localStorage.removeItem('sunoCreatorsValidations');
     }
@@ -907,27 +958,48 @@ const App = () => {
         
         {files.length > 0 && (
           <>
-            <ValidationSummary validations={validations} />
+            <ValidationFilters 
+              validations={validations} 
+              activeFilter={activeFilter}
+              onFilterChange={handleFilterChange}
+            />
             
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-slate-800 mb-4">
-                Peças para Validação
+                {activeFilter 
+                  ? `Peças ${STATUS_LABELS[activeFilter]} (${filteredFiles.length})`
+                  : `Peças para Validação (${filteredFiles.length})`
+                }
               </h2>
               <p className="text-slate-600 mb-6">
                 Clique em qualquer peça para abrir a visualização completa e realizar a validação.
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {files.map(file => (
-                <FileViewer
-                  key={file.id}
-                  file={file}
-                  validation={validations[file.id] || { status: VALIDATION_STATUSES.PENDING, comment: '' }}
-                  onOpenPopup={handleOpenPopup}
-                />
-              ))}
-            </div>
+            {filteredFiles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {filteredFiles.map(file => (
+                  <FileViewer
+                    key={file.id}
+                    file={file}
+                    validation={validations[file.id] || { status: VALIDATION_STATUSES.PENDING, comment: '' }}
+                    onOpenPopup={handleOpenPopup}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-10 h-10 text-slate-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-600 mb-2">
+                  Nenhuma peça encontrada
+                </h3>
+                <p className="text-slate-500">
+                  Não há peças com o status "{STATUS_LABELS[activeFilter]}" no momento.
+                </p>
+              </div>
+            )}
           </>
         )}
       </main>
