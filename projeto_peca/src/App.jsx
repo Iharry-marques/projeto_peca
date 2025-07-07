@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Upload, Check, Edit3, Download, FileText, Image, Video, File, BarChart3, X, Save, Eye, ChevronDown } from 'lucide-react';
+import aprobiLogo from './assets/aprobi-logo.jpg';
+
 
 // Tipos de status de validação
 const VALIDATION_STATUSES = {
@@ -494,57 +496,18 @@ const ValidationFilters = ({ validations, activeFilter, onFilterChange }) => {
 
 // Componente da Logo Aprobi
 const AprobiLogo = ({ size = "large" }) => {
-  const dimensions = size === "large" ? { width: 140, height: 48 } : { width: 100, height: 34 };
-  
+  // Agora controlamos a LARGURA (w) e a altura (h) fica automática
+  const sizeClass = size === "large" ? "w-32" : "w-24"; // w-32 = 128px, w-24 = 96px
+
   return (
-    <svg width={dimensions.width} height={dimensions.height} viewBox="0 0 140 48" className="flex-shrink-0">
-      {/* Letra A com gradiente */}
-      <defs>
-        <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ffc801" />
-          <stop offset="100%" stopColor="#ffb700" />
-        </linearGradient>
-      </defs>
-      
-      {/* Letra A estilizada */}
-      <path 
-        d="M8 38 L18 10 L28 38 M13 28 L23 28" 
-        stroke="url(#yellowGradient)" 
-        strokeWidth="5" 
-        fill="none" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      
-      {/* Triângulo superior do A preenchido */}
-      <path 
-        d="M15 10 L21 10 L24 18 L12 18 Z" 
-        fill="url(#yellowGradient)"
-      />
-      
-      {/* Linhas horizontais azuis */}
-      <line x1="32" y1="16" x2="44" y2="16" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="32" y1="21" x2="40" y2="21" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="32" y1="26" x2="46" y2="26" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
-      
-      {/* Check mark verde/teal */}
-      <path 
-        d="M36 31 L40 35 L48 24" 
-        stroke="#10b981" 
-        strokeWidth="3.5" 
-        fill="none" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      
-      {/* Texto "probi" */}
-      <text x="56" y="33" fontFamily="Arial, sans-serif" fontSize="22" fontWeight="bold" fill="#1e3a8a">
-        probi
-      </text>
-    </svg>
+    <img 
+      src={aprobiLogo} 
+      alt="Aprobi Logo" 
+      // h-auto garante que a proporção da imagem seja mantida
+      className={`${sizeClass} h-auto`} 
+    />
   );
 };
-
 // Componente principal da aplicação
 const App = () => {
   const [files, setFiles] = useState([]);
