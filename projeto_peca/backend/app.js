@@ -1,7 +1,6 @@
 require('dotenv').config();
 // 🔐 app.js - configurações principais do servidor Express - git ignore
 const express = require('express');
-express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
