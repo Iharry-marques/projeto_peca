@@ -1,14 +1,14 @@
 // Em: frontend/src/LoginPage.jsx
 
 import React from 'react';
-import aprobiLogo from './assets/aprobi-logo.jpg'; // 
+import aprobiLogo from './assets/aprobi-logo.jpg'; 
 
-const BACKEND_URL = 'http://localhost:3000';
+// A única mudança é aqui, para apontar para o servidor online
+const BACKEND_URL = 'https://aprobi-backend.onrender.com';
 
 function LoginPage() {
   return (
     <div style={{ textAlign: 'center', paddingTop: '100px' }}>
-      {/* 2. USE A VARIÁVEL IMPORTADA AQUI */}
       <img src={aprobiLogo} alt="Aprobi Logo" style={{ width: '150px', marginBottom: '20px' }} />
       <h1>Bem-vindo ao Aprobi</h1>
       <p>Sistema de Validação de Peças Criativas</p>
