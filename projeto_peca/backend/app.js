@@ -18,6 +18,8 @@ const { User, Campaign, Piece, sequelize } = require('./models');
 
 // --- Início da Aplicação Express ---
 const app = express();
+app.set('trust proxy', 1); // <-- importante para guardar cookies 
+
 
 // --- Configuração dos Middlewares ---
 
