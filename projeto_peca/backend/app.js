@@ -1,4 +1,4 @@
-require('dotenv').config(); // MUITO IMPORTANTE: Deve ser a primeira linha para carregar as variáveis de ambiente
+require('dotenv').config(); // MUITO IMPORTANTE: Deve ser a primeira linha
 
 // --- Importações de Pacotes ---
 const express = require('express');
@@ -11,6 +11,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const SQLiteStore = require('connect-sqlite3')(session); // Importa o armazenamento da sessão
 
 // --- Importações do Projeto ---
 const config = require('./config');
@@ -18,23 +19,24 @@ const { User, Campaign, Piece, sequelize } = require('./models');
 
 // --- Início da Aplicação Express ---
 const app = express();
-app.set('trust proxy', 1); // <-- importante para guardar cookies 
+app.set('trust proxy', 1); // Importante para o Render e cookies seguros
 
+// --- Configuração dos Middlewares (A Ordem é Importante) ---
 
-// --- Configuração dos Middlewares ---
-
-// 1. CORS (Controle de Acesso entre Origens)
-// Permite que o frontend se comunique com este backend.
-// 1. CORS (Controle de Acesso entre Origens)
+// 1. CORS: Deve vir primeiro para permitir a comunicação.
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
   credentials: true,
 };
-app.use(cors(corsOptions)); // <-- CORS PRIMEIRO
+app.use(cors(corsOptions));
 
-// 2. Sessões (APENAS ESTE BLOCO DEVE EXISTIR)
+// 2. Sessões: Agora salvas no banco de dados para serem persistentes.
 app.use(
   session({
+    store: new SQLiteStore({
+      db: 'database.sqlite', // Nome do arquivo do banco de dados
+      dir: './',             // Salva o banco na raiz do backend
+    }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -42,22 +44,21 @@ app.use(
       secure: true,
       proxy: true,
       sameSite: 'none',
-      domain: '.onrender.com'
+      domain: '.onrender.com',
     },
   })
 );
 
-// 3. Passport.js
+// 3. Passport.js: Deve vir depois da configuração da sessão.
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 4. Body Parser e Multer
+// 4. Outros Middlewares
 app.use(bodyParser.json());
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
 
 // --- Associações dos Modelos ---
-// Define como as tabelas do banco de dados se relacionam.
 Campaign.hasMany(Piece);
 Piece.belongsTo(Campaign);
 
@@ -77,7 +78,7 @@ app.get('/auth/google/callback',
   (req, res) => {
     // LOG 1: Vamos ver se a sessão está sendo criada corretamente
     console.log('[CALLBACK] Login bem-sucedido. Usuário na sessão:', req.user);
-    console.log('[CALLBACK] ID da Sessão:', req.session.id);
+    console.log('[CALLBACK] ID da Sessão:', req.sessionID);
     
     // Se a autenticação for um sucesso, redireciona para a página principal do frontend
     res.redirect(process.env.FRONTEND_URL);
@@ -89,12 +90,12 @@ app.get('/auth/status', (req, res) => {
   // LOG 2: Vamos ver o que o backend recebe na verificação
   console.log('---------------------------------');
   console.log('[STATUS] Recebida verificação de status.');
-  console.log('[STATUS] A sessão recebida é:', req.session);
+  console.log('[STATUS] O ID da sessão recebida é:', req.sessionID);
   console.log('[STATUS] O usuário na sessão é:', req.user);
   console.log('[STATUS] O resultado de req.isAuthenticated() é:', req.isAuthenticated());
   console.log('---------------------------------');
 
-  if (req.isAuthenticated()) { // Função do Passport que verifica a sessão
+  if (req.isAuthenticated()) {
     res.status(200).json({
       isAuthenticated: true,
       user: {
@@ -110,6 +111,7 @@ app.get('/auth/status', (req, res) => {
     });
   }
 });
+
 // Rota para fazer logout
 app.get('/logout', (req, res, next) => {
   req.logout((err) => {
@@ -119,7 +121,7 @@ app.get('/logout', (req, res, next) => {
 });
 
 
-/* ========== Rotas de Exemplo da Aplicação (Mantenha ou modifique conforme necessário) ========== */
+/* ========== Outras Rotas da Aplicação ========== */
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -218,7 +220,7 @@ app.get('/files/:filename', (req, res) => {
 
 async function start() {
   try {
-    await sequelize.sync(); // Sincroniza os modelos com o banco de dados
+    await sequelize.sync();
     const port = process.env.PORT || 3000;
     app.listen(port, () => {
       console.log(`[SUCESSO] Servidor rodando na porta ${port}`);
