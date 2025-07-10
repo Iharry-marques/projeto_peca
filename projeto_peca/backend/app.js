@@ -75,6 +75,10 @@ app.get('/auth/google', passport.authenticate('google', {
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: process.env.FRONTEND_URL + '/login' }),
   (req, res) => {
+    // LOG 1: Vamos ver se a sessão está sendo criada corretamente
+    console.log('[CALLBACK] Login bem-sucedido. Usuário na sessão:', req.user);
+    console.log('[CALLBACK] ID da Sessão:', req.session.id);
+    
     // Se a autenticação for um sucesso, redireciona para a página principal do frontend
     res.redirect(process.env.FRONTEND_URL);
   }
@@ -82,6 +86,14 @@ app.get('/auth/google/callback',
 
 // Rota para verificar se o usuário está logado
 app.get('/auth/status', (req, res) => {
+  // LOG 2: Vamos ver o que o backend recebe na verificação
+  console.log('---------------------------------');
+  console.log('[STATUS] Recebida verificação de status.');
+  console.log('[STATUS] A sessão recebida é:', req.session);
+  console.log('[STATUS] O usuário na sessão é:', req.user);
+  console.log('[STATUS] O resultado de req.isAuthenticated() é:', req.isAuthenticated());
+  console.log('---------------------------------');
+
   if (req.isAuthenticated()) { // Função do Passport que verifica a sessão
     res.status(200).json({
       isAuthenticated: true,
@@ -98,7 +110,6 @@ app.get('/auth/status', (req, res) => {
     });
   }
 });
-
 // Rota para fazer logout
 app.get('/logout', (req, res, next) => {
   req.logout((err) => {
