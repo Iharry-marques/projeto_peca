@@ -40,6 +40,7 @@ app.use(
       secure: process.env.NODE_ENV === 'production',
       proxy: true,
       sameSite: 'none',
+      domain: '.onrender.com'
     },
   })
 );
