@@ -34,8 +34,8 @@ app.use(cors(corsOptions));
 app.use(
   session({
     store: new SQLiteStore({
-      db: 'database.sqlite', // Nome do arquivo do banco de dados
-      dir: './',             // Salva o banco na raiz do backend
+      db: 'database.sqlite',
+      dir: './',
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -44,7 +44,6 @@ app.use(
       secure: true,
       proxy: true,
       sameSite: 'none',
-      domain: '.onrender.com',
     },
   })
 );
