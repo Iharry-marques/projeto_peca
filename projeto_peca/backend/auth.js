@@ -21,6 +21,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID, // USA A VARIÁVEL DO .env
       clientSecret: process.env.GOOGLE_CLIENT_SECRET, // USA A VARIÁVEL DO .env
       callbackURL: '/auth/google/callback',
+      proxy: true
     },
     async (accessToken, refreshToken, profile, done) => {
       const email = profile.emails[0].value;
