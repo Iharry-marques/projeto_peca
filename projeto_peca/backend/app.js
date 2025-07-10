@@ -22,28 +22,33 @@ const app = express();
 // --- Configuração dos Middlewares ---
 
 // 1. CORS (Controle de Acesso entre Origens)
-// Permite que o seu frontend se comunique com este backend.
+// Permite que o frontend se comunique com este backend.
+// 1. CORS (Controle de Acesso entre Origens)
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
-  credentials: true, // Permite que o navegador envie cookies de sessão
+  credentials: true,
 };
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // <-- CORS PRIMEIRO
 
-// 2. Sessões
-// Cria a funcionalidade de "lembrar" do usuário após o login. Essencial para o Passport.
-app.use(session({
-  secret: process.env.SESSION_SECRET, // Chave para assinar o cookie de sessão
-  resave: false,
-  saveUninitialized: false
-}));
+// 2. Sessões (APENAS ESTE BLOCO DEVE EXISTIR)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      proxy: true,
+      sameSite: 'none',
+    },
+  })
+);
 
 // 3. Passport.js
-// Inicializa o sistema de autenticação.
 app.use(passport.initialize());
 app.use(passport.session());
 
 // 4. Body Parser e Multer
-// Prepara a aplicação para receber dados JSON e fazer upload de arquivos.
 app.use(bodyParser.json());
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
