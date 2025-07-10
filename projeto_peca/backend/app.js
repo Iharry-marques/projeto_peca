@@ -1,66 +1,80 @@
-require('dotenv').config();
-// 🔐 app.js - configurações principais do servidor Express - git ignore
+require('dotenv').config(); // MUITO IMPORTANTE: Deve ser a primeira linha para carregar as variáveis de ambiente
+
+// --- Importações de Pacotes ---
 const express = require('express');
+const cors = require('cors');
+const session = require('express-session');
+const passport = require('./auth');
 const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const session = require('express-session');
-const passport = require('./auth');
-const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
+// --- Importações do Projeto ---
 const config = require('./config');
 const { User, Campaign, Piece, sequelize } = require('./models');
 
-// Define as associações entre os modelos
-Campaign.hasMany(Piece);
-Piece.belongsTo(Campaign);
-
+// --- Início da Aplicação Express ---
 const app = express();
 
+// --- Configuração dos Middlewares ---
+
+// 1. CORS (Controle de Acesso entre Origens)
+// Permite que o seu frontend se comunique com este backend.
 const corsOptions = {
-  origin: 'http://localhost:3001', // Permite que APENAS o frontend faça requisições
-  credentials: true, // Essencial para permitir o envio de cookies de sessão
+  origin: process.env.FRONTEND_URL,
+  credentials: true, // Permite que o navegador envie cookies de sessão
 };
 app.use(cors(corsOptions));
 
-
-// Sessão e autenticação via Google
+// 2. Sessões
+// Cria a funcionalidade de "lembrar" do usuário após o login. Essencial para o Passport.
 app.use(session({
-  secret: process.env.SESSION_SECRET, // USA A VARIÁVEL DO .env
+  secret: process.env.SESSION_SECRET, // Chave para assinar o cookie de sessão
   resave: false,
   saveUninitialized: false
 }));
+
+// 3. Passport.js
+// Inicializa o sistema de autenticação.
 app.use(passport.initialize());
 app.use(passport.session());
 
+// 4. Body Parser e Multer
+// Prepara a aplicação para receber dados JSON e fazer upload de arquivos.
 app.use(bodyParser.json());
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
-/* ==========
-   Autenticação com Google
-============= */
+
+// --- Associações dos Modelos ---
+// Define como as tabelas do banco de dados se relacionam.
+Campaign.hasMany(Piece);
+Piece.belongsTo(Campaign);
+
+
+// --- Rotas da Aplicação ---
+
+/* ========== Autenticação com Google ========== */
+
+// Rota que inicia o processo de login
 app.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
+// Rota para a qual o Google redireciona após o usuário fazer o login
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { failureRedirect: process.env.FRONTEND_URL + '/login' }),
   (req, res) => {
-res.redirect('http://localhost:3001/');
+    // Se a autenticação for um sucesso, redireciona para a página principal do frontend
+    res.redirect(process.env.FRONTEND_URL);
   }
 );
 
-app.get('/logout', (req, res) => {
-  req.logout(() => {
-    res.redirect('/');
-  });
-});
-
+// Rota para verificar se o usuário está logado
 app.get('/auth/status', (req, res) => {
-  if (req.isAuthenticated()) { // Função mágica do Passport.js
+  if (req.isAuthenticated()) { // Função do Passport que verifica a sessão
     res.status(200).json({
       isAuthenticated: true,
       user: {
@@ -77,11 +91,17 @@ app.get('/auth/status', (req, res) => {
   }
 });
 
+// Rota para fazer logout
+app.get('/logout', (req, res, next) => {
+  req.logout((err) => {
+    if (err) { return next(err); }
+    res.redirect(process.env.FRONTEND_URL);
+  });
+});
 
 
-/* ==========
-   Middleware de Autenticação com JWT
-============= */
+/* ========== Rotas de Exemplo da Aplicação (Mantenha ou modifique conforme necessário) ========== */
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -93,9 +113,6 @@ function authenticateToken(req, res, next) {
   });
 }
 
-/* ==========
-   Cadastro Manual (opcional)
-============= */
 app.post('/register', async (req, res) => {
   const { username, password, role } = req.body;
   try {
@@ -106,9 +123,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-/* ==========
-   Login Manual
-============= */
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ where: { username } });
@@ -119,10 +133,6 @@ app.post('/login', async (req, res) => {
   res.json({ token });
 });
 
-/* ==========
-   Campanhas
-============= */
-// Criar nova campanha
 app.post('/campaigns', authenticateToken, async (req, res) => {
   const { name, client, creativeLine, startDate, endDate } = req.body;
   try {
@@ -133,15 +143,11 @@ app.post('/campaigns', authenticateToken, async (req, res) => {
   }
 });
 
-// Listar campanhas
 app.get('/campaigns', authenticateToken, async (req, res) => {
   const campaigns = await Campaign.findAll();
   res.json(campaigns);
 });
 
-/* ==========
-   Upload de Peças
-============= */
 app.post('/campaigns/:id/upload', authenticateToken, upload.array('files'), async (req, res) => {
   const campaign = await Campaign.findByPk(req.params.id);
   if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
@@ -153,10 +159,6 @@ app.post('/campaigns/:id/upload', authenticateToken, upload.array('files'), asyn
   res.json(pieces);
 });
 
-/* ==========
-   Aprovação Pública
-============= */
-// Página pública de aprovação (via link)
 app.get('/approval/:hash', async (req, res) => {
   const campaign = await Campaign.findOne({
     where: { approvalHash: req.params.hash },
@@ -166,9 +168,8 @@ app.get('/approval/:hash', async (req, res) => {
   res.json({ campaign });
 });
 
-// Envio de feedbacks
 app.post('/approval/:hash', async (req, res) => {
-  const { pieces } = req.body; // array de feedbacks
+  const { pieces } = req.body;
   const campaign = await Campaign.findOne({
     where: { approvalHash: req.params.hash },
     include: Piece
@@ -187,22 +188,25 @@ app.post('/approval/:hash', async (req, res) => {
   res.json({ message: 'Feedback recorded' });
 });
 
-/* ==========
-   Servir arquivos
-============= */
 app.get('/files/:filename', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', req.params.filename);
   if (!fs.existsSync(filePath)) return res.sendStatus(404);
   res.sendFile(filePath);
 });
 
-/* ==========
-   Inicialização
-============= */
+
+/* ========== Inicialização do Servidor ========== */
+
 async function start() {
-  await sequelize.sync();
-  const port = process.env.PORT || 3000;
-  app.listen(port, () => console.log(`Server running on port ${port}`));
+  try {
+    await sequelize.sync(); // Sincroniza os modelos com o banco de dados
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+      console.log(`[SUCESSO] Servidor rodando na porta ${port}`);
+    });
+  } catch (error) {
+    console.error('[ERRO] Não foi possível iniciar o servidor:', error);
+  }
 }
 
 start();
