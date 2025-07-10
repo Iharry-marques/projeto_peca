@@ -11,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const SQLiteStore = require('connect-sqlite3')(session); // Importa o armazenamento da sessão
+const SQLiteStore = require('connect-sqlite3')(session);
 
 // --- Importações do Projeto ---
 const config = require('./config');
@@ -61,32 +61,32 @@ const upload = multer({ dest: path.join(__dirname, 'uploads') });
 Campaign.hasMany(Piece);
 Piece.belongsTo(Campaign);
 
+// --- ROTAS DA APLICAÇÃO ---
 
-// --- Rotas da Aplicação ---
+// Middleware de verificação de autenticação para rotas protegidas
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'Usuário não autenticado.' });
+}
 
 /* ========== Autenticação com Google ========== */
 
-// Rota que inicia o processo de login
 app.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
-// Rota para a qual o Google redireciona após o usuário fazer o login
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: process.env.FRONTEND_URL + '/login' }),
   (req, res) => {
-    // LOG 1: Vamos ver se a sessão está sendo criada corretamente
     console.log('[CALLBACK] Login bem-sucedido. Usuário na sessão:', req.user);
     console.log('[CALLBACK] ID da Sessão:', req.sessionID);
-    
-    // Se a autenticação for um sucesso, redireciona para a página principal do frontend
     res.redirect(process.env.FRONTEND_URL);
   }
 );
 
-// Rota para verificar se o usuário está logado
 app.get('/auth/status', (req, res) => {
-  // LOG 2: Vamos ver o que o backend recebe na verificação
   console.log('---------------------------------');
   console.log('[STATUS] Recebida verificação de status.');
   console.log('[STATUS] O ID da sessão recebida é:', req.sessionID);
@@ -111,7 +111,6 @@ app.get('/auth/status', (req, res) => {
   }
 });
 
-// Rota para fazer logout
 app.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) { return next(err); }
@@ -119,9 +118,88 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
+/* ========== Rotas de Campanhas (Campaigns) ========== */
 
-/* ========== Outras Rotas da Aplicação ========== */
+// ROTA PARA CRIAR UMA NOVA CAMPANHA
+app.post('/campaigns', ensureAuthenticated, async (req, res) => {
+  const { name, client, creativeLine } = req.body;
+  try {
+    if (!name || !client) {
+      return res.status(400).json({ error: 'Nome e cliente da campanha são obrigatórios.' });
+    }
+    const campaign = await Campaign.create({ name, client, creativeLine });
+    res.status(201).json(campaign);
+  } catch (err) {
+    console.error('Erro ao criar campanha:', err);
+    res.status(400).json({ error: err.message });
+  }
+});
 
+// ROTA PARA BUSCAR TODAS AS CAMPANHAS
+app.get('/campaigns', ensureAuthenticated, async (req, res) => {
+  try {
+    const campaigns = await Campaign.findAll({
+      order: [['createdAt', 'DESC']] // Ordena da mais nova para a mais antiga
+    });
+    res.json(campaigns);
+  } catch(err) {
+    console.error('Erro ao buscar campanhas:', err);
+    res.status(500).json({ error: 'Erro interno ao buscar campanhas.'});
+  }
+});
+
+/* ========== Rotas de Peças (Pieces) e Aprovação ========== */
+
+// Rota para upload de peças (files) para uma campanha específica
+app.post('/campaigns/:id/upload', ensureAuthenticated, upload.array('files'), async (req, res) => {
+  const campaign = await Campaign.findByPk(req.params.id);
+  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+  const pieces = await Promise.all(req.files.map(f => Piece.create({
+    filename: f.filename,
+    mimetype: f.mimetype,
+    CampaignId: campaign.id,
+  })));
+  res.json(pieces);
+});
+
+// Rota pública para visualização e aprovação
+app.get('/approval/:hash', async (req, res) => {
+  const campaign = await Campaign.findOne({
+    where: { approvalHash: req.params.hash },
+    include: Piece
+  });
+  if (!campaign) return res.status(404).json({ error: 'Invalid link' });
+  res.json({ campaign });
+});
+
+// Rota para salvar o feedback de aprovação
+app.post('/approval/:hash', async (req, res) => {
+  const { pieces } = req.body;
+  const campaign = await Campaign.findOne({
+    where: { approvalHash: req.params.hash },
+    include: Piece
+  });
+  if (!campaign) return res.status(404).json({ error: 'Invalid link' });
+
+  for (const p of pieces) {
+    const piece = await Piece.findOne({ where: { id: p.id, CampaignId: campaign.id } });
+    if (piece) {
+      piece.status = p.status;
+      piece.comment = p.comment;
+      await piece.save();
+    }
+  }
+  res.json({ message: 'Feedback recorded' });
+});
+
+// Rota para servir os arquivos estáticos (peças)
+app.get('/files/:filename', (req, res) => {
+  const filePath = path.join(__dirname, 'uploads', req.params.filename);
+  if (!fs.existsSync(filePath)) return res.sendStatus(404);
+  res.sendFile(filePath);
+});
+
+/* ========== Rotas Legadas (Login Manual - Manter por enquanto) ========== */
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -151,67 +229,6 @@ app.post('/login', async (req, res) => {
   if (!match) return res.status(401).json({ error: 'Invalid credentials' });
   const token = jwt.sign({ id: user.id, role: user.role }, config.jwtSecret);
   res.json({ token });
-});
-
-app.post('/campaigns', authenticateToken, async (req, res) => {
-  const { name, client, creativeLine, startDate, endDate } = req.body;
-  try {
-    const campaign = await Campaign.create({ name, client, creativeLine, startDate, endDate });
-    res.json(campaign);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.get('/campaigns', authenticateToken, async (req, res) => {
-  const campaigns = await Campaign.findAll();
-  res.json(campaigns);
-});
-
-app.post('/campaigns/:id/upload', authenticateToken, upload.array('files'), async (req, res) => {
-  const campaign = await Campaign.findByPk(req.params.id);
-  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
-  const pieces = await Promise.all(req.files.map(f => Piece.create({
-    filename: f.filename,
-    mimetype: f.mimetype,
-    CampaignId: campaign.id,
-  })));
-  res.json(pieces);
-});
-
-app.get('/approval/:hash', async (req, res) => {
-  const campaign = await Campaign.findOne({
-    where: { approvalHash: req.params.hash },
-    include: Piece
-  });
-  if (!campaign) return res.status(404).json({ error: 'Invalid link' });
-  res.json({ campaign });
-});
-
-app.post('/approval/:hash', async (req, res) => {
-  const { pieces } = req.body;
-  const campaign = await Campaign.findOne({
-    where: { approvalHash: req.params.hash },
-    include: Piece
-  });
-  if (!campaign) return res.status(404).json({ error: 'Invalid link' });
-
-  for (const p of pieces) {
-    const piece = await Piece.findOne({ where: { id: p.id, CampaignId: campaign.id } });
-    if (piece) {
-      piece.status = p.status;
-      piece.comment = p.comment;
-      await piece.save();
-    }
-  }
-
-  res.json({ message: 'Feedback recorded' });
-});
-
-app.get('/files/:filename', (req, res) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.filename);
-  if (!fs.existsSync(filePath)) return res.sendStatus(404);
-  res.sendFile(filePath);
 });
 
 
