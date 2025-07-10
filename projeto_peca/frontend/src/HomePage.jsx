@@ -674,9 +674,73 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <header className="bg-white shadow-xl border-b border-slate-200">
-        {/* ... (código do header existente) ... */}
-      </header>
+<header className="bg-white shadow-xl border-b border-slate-200">
+  <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-6">
+        <AprobiLogo size="large" />
+        <div className="border-l border-slate-300 pl-6">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+            Sistema de Aprovação
+          </h1>
+          <p className="text-lg text-slate-600 font-medium">
+            Validação de Peças Criativas
+          </p>
+        </div>
+      </div>
+
+      {files.length > 0 && (
+        <div className="flex gap-4">
+          <div className="relative export-menu-container">
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={isExporting}
+              className={`bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center font-semibold transform hover:scale-105 ${isExporting ? 'opacity-75 cursor-not-allowed' : ''}`}
+            >
+              {isExporting ? (
+                <>
+                  <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5 mr-2" />
+                  Exportar
+                  <ChevronDown className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </button>
+
+            {showExportMenu && !isExporting && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-50">
+                <div className="py-2">
+                  <button onClick={() => { exportCSV(); setShowExportMenu(false); }} className="w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-50 flex items-center transition-colors">
+                    <FileText className="w-4 h-4 mr-3 text-emerald-600" />
+                    <div>
+                      <div className="font-semibold">Exportar CSV</div>
+                      <div className="text-xs text-slate-500">Planilha para análise</div>
+                    </div>
+                  </button>
+                  <button onClick={() => { exportPDF(); setShowExportMenu(false); }} className="w-full text-left px-4 py-3 text-slate-700 hover:bg-slate-50 flex items-center transition-colors">
+                    <File className="w-4 h-4 mr-3 text-red-600" />
+                    <div>
+                      <div className="font-semibold">Exportar PDF</div>
+                      <div className="text-xs text-slate-500">Relatório visual completo</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button onClick={clearAll} className="bg-gradient-to-r from-rose-500 to-rose-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold transform hover:scale-105">
+            Limpar Tudo
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+</header>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* ======================================================= */}
