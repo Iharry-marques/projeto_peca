@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
+import Spinner from './Spinner';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -13,7 +14,7 @@ function ProtectedRoute({ children }) {
     const checkAuthStatus = async () => {
       try {
         // A única mudança é aqui, para apontar para o servidor online
-        const response = await fetch('https://aprobi-backend.onrender.com/auth/status', {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/status`, {
           credentials: 'include',
         });
 
@@ -33,7 +34,7 @@ function ProtectedRoute({ children }) {
   }, []);
 
   if (isAuthenticated === null) {
-    return <div>Carregando...</div>;
+    return <Spinner />;
   }
 
   if (!isAuthenticated) {
