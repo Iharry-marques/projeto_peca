@@ -2,6 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 // ADICIONEI ÍCONES NOVOS AQUI
 import { Upload, Check, Edit3, Download, FileText, Image, Video, File, BarChart3, X, Save, Eye, ChevronDown, PlusCircle, Briefcase } from 'lucide-react';
 import aprobiLogo from './assets/aprobi-logo.jpg';
+import CampaignSelector from './components/CampaignSelector';
+import CampaignPreviewCard from './components/CampaignPreviewCard';
 
 
 // Tipos de status de validação
@@ -744,42 +746,46 @@ const App = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {/* ======================================================= */}
-        {/* ============ MUDANÇA: NOVA SEÇÃO DE CAMPANHAS ========= */}
+        {/* ============ NOVA SEÇÃO DE CAMPANHAS MODERNA ========== */}
         {/* ======================================================= */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg mb-8 border border-slate-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg mb-8 border border-slate-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6">
             <div className="flex items-center">
-              <Briefcase className="w-6 h-6 text-slate-500 mr-3" />
-              <h2 className="text-xl font-bold text-slate-800">Gestão de Campanhas</h2>
+              <div className="w-12 h-12 bg-gradient-to-r from-[#ffc801] to-[#ffb700] rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                <Briefcase className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">Gestão de Campanhas</h2>
+                <p className="text-slate-600">Selecione ou crie uma campanha para começar</p>
+              </div>
             </div>
             <button
               onClick={() => setCampaignModalOpen(true)}
-              className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition-all transform hover:scale-105"
+              className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
               Nova Campanha
             </button>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-200">
-            <label htmlFor="campaign-select" className="block text-sm font-medium text-slate-600 mb-2">
-              {campaigns.length > 0 ? 'Selecione uma campanha para visualizar ou adicionar peças:' : 'Nenhuma campanha encontrada. Crie uma para começar.'}
-            </label>
-            <select
-              id="campaign-select"
-              value={selectedCampaignId}
-              onChange={(e) => setSelectedCampaignId(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 focus:border-[#ffc801] focus:ring-1 focus:ring-[#ffc801]"
-              disabled={campaigns.length === 0}
-            >
-              <option value="" disabled>-- Selecione uma Campanha --</option>
-              {campaigns.map(campaign => (
-                <option key={campaign.id} value={campaign.id}>
-                  {campaign.name} - ({campaign.client})
-                </option>
-              ))}
-            </select>
-          </div>
+          
+          <CampaignSelector
+            campaigns={campaigns}
+            selectedCampaignId={selectedCampaignId}
+            onCampaignChange={setSelectedCampaignId}
+            onCreateNew={() => setCampaignModalOpen(true)}
+            disabled={false}
+          />
         </div>
+
+        {/* Preview Card da Campanha Selecionada */}
+        {selectedCampaignId && (
+          <div className="mb-8">
+            <CampaignPreviewCard 
+              campaign={campaigns.find(c => c.id === selectedCampaignId)}
+              pieceCount={files.length}
+            />
+          </div>
+        )}
 
         <FileUpload onFilesAdded={handleFilesAdded} disabled={!selectedCampaignId} />
         
