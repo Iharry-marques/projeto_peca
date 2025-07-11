@@ -4,7 +4,7 @@ import React from 'react';
 import aprobiLogo from './assets/aprobi-logo.jpg'; 
 
 // A única mudança é aqui, para apontar para o servidor online
-const BACKEND_URL = 'https://aprobi-backend.onrender.com';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function LoginPage() {
   return (
