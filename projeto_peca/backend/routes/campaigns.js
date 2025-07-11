@@ -26,7 +26,7 @@ router.post('/', ensureAuthenticated, async (req, res) => {
       return res.status(400).json({ error: 'Nome e cliente da campanha são obrigatórios.' });
     }
     const campaign = await Campaign.create({ name, client, creativeLine });
-    res.status(201).json(campaign);
+    res.status(201).json({ id: campaign.id, name, client, creativeLine });
   } catch (err) {
     console.error('Erro ao criar campanha:', err);
     res.status(400).json({ error: err.message });
