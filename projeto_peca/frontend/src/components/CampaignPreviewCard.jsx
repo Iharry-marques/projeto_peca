@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarIcon, UserIcon, SparklesIcon, ClockIcon, FolderIcon } from '@heroicons/react/20/solid';
+import { CalendarIcon, UserIcon, SparklesIcon, ClockIcon, FolderIcon } from '@heroicons/react/24/solid';
 
 const CampaignPreviewCard = ({ campaign, pieceCount = 0 }) => {
   if (!campaign) return null;

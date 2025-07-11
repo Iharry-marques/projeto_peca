@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
-import { ChevronDownIcon, CheckIcon, PlusIcon, CalendarIcon, UserIcon, BriefcaseIcon } from '@heroicons/react/20/solid';
+import { ChevronDownIcon, CheckIcon, PlusIcon, CalendarIcon, UserIcon, BriefcaseIcon } from '@heroicons/react/24/solid';
 
 const CampaignSelector = ({ campaigns, selectedCampaignId, onCampaignChange, onCreateNew, disabled = false }) => {
   const selectedCampaign = campaigns.find(campaign => campaign.id === selectedCampaignId) || null;
@@ -88,20 +88,20 @@ const CampaignSelector = ({ campaigns, selectedCampaignId, onCampaignChange, onC
                     )}
                   </div>
                 </div>
-                <ChevronDownIcon className="ml-4 h-6 w-6 text-slate-400 flex-shrink-0" aria-hidden="true" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
-                    <BriefcaseIcon className="w-6 h-6 text-slate-400" />
-                  </div>
-                  <div>
-                    <div className="text-slate-400 font-medium">Nenhuma campanha selecionada</div>
-                    <div className="text-sm text-slate-500">Escolha uma campanha para começar</div>
-                  </div>
-                </div>
-                <ChevronDownIcon className="ml-4 h-6 w-6 text-slate-400 flex-shrink-0" aria-hidden="true" />
+                                 <ChevronDownIcon className="ml-4 h-5 w-5 text-slate-400 flex-shrink-0" aria-hidden="true" />
+               </div>
+             ) : (
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                     <BriefcaseIcon className="w-6 h-6 text-slate-400" />
+                   </div>
+                   <div>
+                     <div className="text-slate-400 font-medium">Nenhuma campanha selecionada</div>
+                     <div className="text-sm text-slate-500">Escolha uma campanha para começar</div>
+                   </div>
+                 </div>
+                 <ChevronDownIcon className="ml-4 h-5 w-5 text-slate-400 flex-shrink-0" aria-hidden="true" />
               </div>
             )}
           </Listbox.Button>
@@ -208,9 +208,9 @@ const CampaignSelector = ({ campaigns, selectedCampaignId, onCampaignChange, onC
                               </div>
                             )}
                           </div>
-                          {selected && (
-                            <CheckIcon className="w-6 h-6 text-[#ffc801] flex-shrink-0 ml-4" aria-hidden="true" />
-                          )}
+                                                     {selected && (
+                             <CheckIcon className="w-5 h-5 text-[#ffc801] flex-shrink-0 ml-4" aria-hidden="true" />
+                           )}
                         </div>
                       </div>
                     )}
