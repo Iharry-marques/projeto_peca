@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo: Nova Interface de Campanhas - Aprobi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-6xl mx-auto p-8">
+        <!-- Header -->
+        <div class="bg-white p-8 rounded-2xl shadow-lg mb-8 border">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Nova Interface de Campanhas</h1>
+                    <p class="text-gray-600">Sistema Aprobi - Modernização Completa</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-4 bg-green-50 rounded-xl border border-green-200">
+                    <div class="text-2xl font-bold text-green-800">✅ Headless UI</div>
+                    <div class="text-sm text-green-600">Componentes acessíveis</div>
+                </div>
+                <div class="text-center p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div class="text-2xl font-bold text-blue-800">🎨 Design Moderno</div>
+                    <div class="text-sm text-blue-600">Interface profissional</div>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
+                    <div class="text-2xl font-bold text-purple-800">📱 Responsivo</div>
+                    <div class="text-sm text-purple-600">Mobile-first</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparação ANTES/DEPOIS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- ANTES -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">❌</span>
+                    <h2 class="text-xl font-bold text-gray-800">ANTES - Interface Simples</h2>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-xl border-2 border-dashed border-gray-300">
+                    <div class="bg-white border border-gray-300 rounded p-3 text-gray-600">
+                        <select class="w-full p-2 border border-gray-300 rounded">
+                            <option>Pascoa - - (Suno)</option>
+                        </select>
+                    </div>
+                </div>
+                <ul class="mt-4 space-y-2 text-sm text-gray-600">
+                    <li>• Dropdown HTML básico</li>
+                    <li>• Informações limitadas</li>
+                    <li>• Sem feedback visual</li>
+                    <li>• Experiência genérica</li>
+                </ul>
+            </div>
+
+            <!-- DEPOIS -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-2xl">✅</span>
+                    <h2 class="text-xl font-bold text-gray-800">DEPOIS - Interface Moderna</h2>
+                </div>
+                <div class="space-y-4">
+                    <!-- Mock do CampaignSelector -->
+                    <div class="border-2 border-yellow-200 rounded-xl p-4 bg-gradient-to-r from-yellow-50 to-yellow-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-3 h-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full"></div>
+                                    <h3 class="font-bold text-gray-800">Campanha Páscoa 2024</h3>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full border bg-green-100 text-green-800 border-green-200">Ativa</span>
+                                </div>
+                                <div class="flex items-center gap-4 text-sm text-gray-600">
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                                        </svg>
+                                        <span class="font-medium">Suno</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span>🎨</span>
+                                        <span>Chocolate e Felicidade</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Mock do CampaignPreviewCard -->
+                    <div class="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-200">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="w-3 h-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full animate-pulse"></div>
+                                    <h3 class="font-bold text-gray-800">Campanha Páscoa 2024</h3>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full border bg-green-100 text-green-800 border-green-200">Ativa</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-bold text-yellow-500">3</div>
+                                <div class="text-xs text-gray-500">peças</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="flex items-center gap-2 p-2 bg-white rounded border">
+                                <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-gray-500">Cliente</div>
+                                    <div class="font-semibold">Suno</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-white rounded border">
+                                <div class="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                                    <span class="text-xs">🎨</span>
+                                </div>
+                                <div>
+                                    <div class="text-gray-500">Linha</div>
+                                    <div class="font-semibold">Chocolate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <ul class="mt-4 space-y-2 text-sm text-gray-600">
+                    <li>• Design elegante e profissional</li>
+                    <li>• Informações detalhadas visíveis</li>
+                    <li>• Estados visuais interativos</li>
+                    <li>• Preview contextual da campanha</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Recursos Implementados -->
+        <div class="bg-white p-8 rounded-2xl shadow-lg border mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">🚀 Recursos Implementados</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                    <h3 class="font-bold text-blue-800 mb-2">🎨 CampaignSelector</h3>
+                    <ul class="text-sm text-blue-700 space-y-1">
+                        <li>• Dropdown moderno com Headless UI</li>
+                        <li>• Informações detalhadas visíveis</li>
+                        <li>• Estados visuais (hover, focus)</li>
+                        <li>• Botão integrado "Criar Nova"</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
+                    <h3 class="font-bold text-green-800 mb-2">📊 CampaignPreviewCard</h3>
+                    <ul class="text-sm text-green-700 space-y-1">
+                        <li>• Preview completo da campanha</li>
+                        <li>• Status coloridos dinâmicos</li>
+                        <li>• Contador de peças em tempo real</li>
+                        <li>• Barra de progresso para campanhas ativas</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+                    <h3 class="font-bold text-purple-800 mb-2">♿ Acessibilidade</h3>
+                    <ul class="text-sm text-purple-700 space-y-1">
+                        <li>• ARIA labels completos</li>
+                        <li>• Navegação por teclado</li>
+                        <li>• Screen reader compatível</li>
+                        <li>• Contraste adequado</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Como Testar -->
+        <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 p-8 rounded-2xl border border-yellow-200 mb-8">
+            <h2 class="text-2xl font-bold text-yellow-800 mb-4">🧪 Como Testar as Mudanças</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-yellow-800 mb-3">📱 No Cursor Web:</h3>
+                    <ol class="space-y-2 text-sm text-yellow-700">
+                        <li><strong>1.</strong> Abra o Terminal integrado</li>
+                        <li><strong>2.</strong> Execute: <code class="bg-yellow-200 px-2 py-1 rounded">cd frontend && npm run dev</code></li>
+                        <li><strong>3.</strong> Procure por "Preview" ou "Open Browser" na barra superior</li>
+                        <li><strong>4.</strong> Ou acesse: <code class="bg-yellow-200 px-2 py-1 rounded">localhost:5173</code></li>
+                    </ol>
+                </div>
+                <div>
+                    <h3 class="font-bold text-yellow-800 mb-3">🌐 Deploy Online:</h3>
+                    <ol class="space-y-2 text-sm text-yellow-700">
+                        <li><strong>1.</strong> Build criada em: <code class="bg-yellow-200 px-2 py-1 rounded">frontend/dist/</code></li>
+                        <li><strong>2.</strong> Servidor rodando na porta: <code class="bg-yellow-200 px-2 py-1 rounded">8080</code></li>
+                        <li><strong>3.</strong> Procure por port forwarding no Cursor</li>
+                        <li><strong>4.</strong> Ou faça download da pasta <code class="bg-yellow-200 px-2 py-1 rounded">dist</code></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximos Passos -->
+        <div class="bg-white p-8 rounded-2xl shadow-lg border">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🔮 Próximos Passos Sugeridos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 border border-gray-200 rounded-xl">
+                    <h3 class="font-bold text-gray-800 mb-2">🔍 Curto Prazo</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Search/Filter por campanhas</li>
+                        <li>• Keyboard shortcuts</li>
+                        <li>• Loading states</li>
+                        <li>• Error handling</li>
+                    </ul>
+                </div>
+                <div class="p-4 border border-gray-200 rounded-xl">
+                    <h3 class="font-bold text-gray-800 mb-2">📊 Médio Prazo</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Drag & Drop</li>
+                        <li>• Bulk actions</li>
+                        <li>• Advanced filters</li>
+                        <li>• Export options</li>
+                    </ul>
+                </div>
+                <div class="p-4 border border-gray-200 rounded-xl">
+                    <h3 class="font-bold text-gray-800 mb-2">🚀 Longo Prazo</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Campaign templates</li>
+                        <li>• Collaboration features</li>
+                        <li>• Activity timeline</li>
+                        <li>• Analytics dashboard</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 p-6 bg-gray-100 rounded-2xl">
+            <p class="text-gray-600">
+                <strong>Interface moderna implementada com sucesso! 🎉</strong><br>
+                Sistema Aprobi agora oferece uma experiência profissional e acessível.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
